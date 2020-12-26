@@ -26,9 +26,9 @@ class Game:
         player.showCoins()
         i = 0
         print()
-        for action in player.truthful_actions:
-            print(Actions(action).name, end = "(" + str(i) + ") ")
-            i += 1
+        i = player.showTruthfulActions()
+        player.showLieActions(i)
+
         choice = int(input())
         action = player.truthful_actions[choice]
         if action == Actions.tax:

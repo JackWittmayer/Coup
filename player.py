@@ -152,3 +152,17 @@ class Player:
 
     def showCoins(self):
         print("Coins:", str(self.coins))
+
+    def showTruthfulActions(self):
+        i = 0
+        for action in self.truthful_actions:
+            print(Actions(action).name, end = "(" + str(i) + ") ")
+            i += 1
+        return i
+
+    def showLieActions(self, i):
+        for action in Actions:
+            if action not in self.truthful_actions:
+                print(Actions(action).name, end = "(" + str(i) + ") ")
+                i += 1
+

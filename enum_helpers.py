@@ -15,10 +15,6 @@ class Actions(enum.Enum):
     income = 4
     foreign_aid = 5
     coup = 6
-    strings = ["Tax", "Assassinate", "Steal", "Exchange", "Income", "Foreign Aid", "Coup"]
-
-    def __getitem__(self, item):
-        return self.strings[item]
 
 class CounterActions(enum.Enum):
     block_aid = 0
