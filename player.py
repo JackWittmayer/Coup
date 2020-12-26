@@ -9,41 +9,57 @@ class Player:
         self.truthful_actions = []
         self.truthful_counter_actions = []
         self.general_actions = [Actions.income, Actions.foreign_aid]
+        self.lie_actions = []
+        self.lie_counter_actions = []
         self.influence = 2
         self.name = name
 
-    def findTruthfulActions(self, remaining_players):
+    def findActions(self, remaining_players):
+        cardActions = set()
+        cardCounterActions = set()
+        for card in self.cards:
+            if not card.isDisabled():
+                cardActions.add(card.action)
+                cardCounterActions.add(card.counter_action)
         self.truthful_actions = [Actions.income, Actions.foreign_aid]
         self.truthful_counter_actions = []
+        self.lie_actions = []
+        self.lie_counter_actions = []
         # if player has >= 10 coins, they can only coup:
         if self.coins >= 10:
             self.truthful_actions = [Actions.coup]
             return
 
         # add all card actions to the lists of truthful actions and counter actions
-        for card in self.cards:
-            if not card.isDisabled():
-                if card.action != -1 and card.action not in self.truthful_actions:
-                    # don't add assassinate action if less than 3 coins:
-                    if card.action == Actions.assassinate:
-                        if self.coins >= 3:
-                            self.truthful_actions.append(card.action)
-                    elif card.action == Actions.steal:
-                        # only add steal action if there is another player with at least 1 coin:
-                        validSteal = False
-                        for otherPlayer in remaining_players:
-                            if otherPlayer is not self and otherPlayer.coins >= 1:
-                                validSteal = True
-                                break
-                        if validSteal:
-                            self.truthful_actions.append(card.action)
-                    else:
-                        self.truthful_actions.append(card.action)
-                if card.counter_action != -1 and card.counter_action not in self.truthful_counter_actions:
-                    self.truthful_counter_actions.append(card.counter_action)
-        # add coup if coins >= 7:
-        if self.coins >= 7:
-            self.truthful_actions.append(Actions.coup)
+        for action in Actions:
+            if action == Actions.income or action == Actions.foreign_aid:
+                continue
+            # don't add assassinate action if less than 3 coins:
+            if action == Actions.assassinate:
+                if self.coins <= 3:
+                    continue
+            elif action == Actions.steal:
+                # only add steal action if there is another player with at least 1 coin:
+                validSteal = False
+                for otherPlayer in remaining_players:
+                    if otherPlayer is not self and otherPlayer.coins >= 1:
+                        validSteal = True
+                        break
+                if not validSteal:
+                    continue
+            elif action == Actions.coup:
+                if self.coins < 7:
+                    continue
+            if action in cardActions:
+                self.truthful_actions.append(action)
+            else:
+                self.lie_actions.append(action)
+                
+        for counter_action in CounterActions:
+            if counter_action in cardCounterActions:
+                self.truthful_counter_actions.append(counter_action)
+            else:
+                self.lie_counter_actions.append(counter_action)
 
     def loseInfluence(self):
         if self.influence == 2:
@@ -116,14 +132,14 @@ class Player:
                     exchange = self.cards.pop(exchangeCard)
                     self.cards.append(secondCard)
             deck.insertCard(exchange)
-            self.findTruthfulActions(remaining_players)
+            self.findActions(remaining_players)
 
         elif exchangeCard == 2:
             deck.insertCard(self.cards.pop())
             deck.insertCard(self.cards.pop())
             self.cards.append(firstCard)
             self.cards.append(secondCard)
-            self.findTruthfulActions(remaining_players)
+            self.findActions(remaining_players)
 
         elif exchangeCard == 3:
             deck.insertCard(firstCard)
@@ -154,15 +170,13 @@ class Player:
         print("Coins:", str(self.coins))
 
     def showTruthfulActions(self):
-        i = 0
+        self.truthful_actions.sort()
+        print("Real actions: ", end = "")
         for action in self.truthful_actions:
-            print(Actions(action).name, end = "(" + str(i) + ") ")
-            i += 1
-        return i
+            print(Actions(action).name, end = "(" + str(action.value) + ") ")
 
-    def showLieActions(self, i):
-        for action in Actions:
-            if action not in self.truthful_actions:
-                print(Actions(action).name, end = "(" + str(i) + ") ")
-                i += 1
+    def showLieActions(self):
+        print("Lies: ", end = "")
+        for action in self.lie_actions:
+            print(Actions(action).name, end = "(" + str(action.value) + ") ")
 

@@ -21,16 +21,16 @@ class Game:
     def askForAction(self, player):
         print()
         print(player.name, "what would you like to do?")
-        player.findTruthfulActions(self.remaining_players)
+        player.findActions(self.remaining_players)
         player.showCards()
         player.showCoins()
-        i = 0
         print()
-        i = player.showTruthfulActions()
-        player.showLieActions(i)
+        player.showTruthfulActions()
+        print()
+        player.showLieActions()
 
         choice = int(input())
-        action = player.truthful_actions[choice]
+        action = Actions(choice)
         if action == Actions.tax:
             player.tax()
         elif action == Actions.assassinate:
@@ -81,7 +81,7 @@ class Game:
             player.giveCard(self.deck.drawFromTop())
         self.players.append(player)
         self.remaining_players.append(player)
-        player.findTruthfulActions(self.remaining_players)
+        player.findActions(self.remaining_players)
 
     def chooseFromOtherPlayers(self, player, action):
         choiceInt = -1
