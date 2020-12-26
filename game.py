@@ -13,6 +13,7 @@ class Game:
         self.remaining_players = []
         for i in range(numberOfPlayers):
             self.createPlayer("Player " + str(i))
+        self.showAllCards()
         while True:
             turnResult = self.startTurn()
             if turnResult == 1:
@@ -76,6 +77,7 @@ class Game:
         elif action == Actions.income:
             player.income()
         elif action == Actions.foreign_aid:
+            self.showAllCards()
             print("Would a player like to block foreign aid?")
             choice = int(input("Yes(0), No(1)"))
             if choice == 0:
@@ -178,3 +180,7 @@ class Game:
                 print(player.name, "was not lying!")
                 challenger.loseInfluence()
         return actionFailed
+
+    def showAllCards(self):
+        for player in self.players:
+            player.showCards()

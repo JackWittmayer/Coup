@@ -146,7 +146,7 @@ class Player:
         otherPlayer.loseInfluence()
 
     def showCards(self):
-        print("Your cards: ", end= "")
+        print(self.name, "cards: ", end= "")
         for card in self.cards:
             if card.isDisabled():
                 print("DISABLED: ", end = "")
