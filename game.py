@@ -84,7 +84,7 @@ class Game:
         player.findTruthfulActions(self.remaining_players)
 
     def chooseFromOtherPlayers(self, player, action):
-        choiceInt = 0
+        choiceInt = -1
         if len(self.remaining_players) > 2:
             if action == "block":
                 print("Which player would like to block?")
@@ -104,8 +104,12 @@ class Game:
             target = self.remaining_players[choiceInt]
 
         else:
+            i = 0
             for otherPlayer in self.remaining_players:
                 if otherPlayer is player:
+                    i += 1
                     continue
                 target = otherPlayer
+                choiceInt = i
+                break
         return target, choiceInt
