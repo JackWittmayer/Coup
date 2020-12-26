@@ -2,7 +2,7 @@ import random
 from deck import Deck
 from player import Player
 from card import Card
-from enum_helpers import Cards, Actions, CounterActions
+from enum_helpers import Cards, Actions, CounterActions, ActionsToCards, CounterActionsToCards
 import time
 
 
@@ -32,17 +32,26 @@ class Game:
         choice = int(input())
         action = Actions(choice)
         if action == Actions.tax:
-            player.tax()
+            actionFailed = self.allowChallenges(player, "tax", action)
+            if not actionFailed:
+                player.tax()
         elif action == Actions.assassinate:
             target, choiceInt = self.chooseFromOtherPlayers(player, "assassinate")
-            player.assassinate(target)
-            if target.influence < 1:
-                self.remaining_players.pop(choiceInt)
+            player.coins -= 3
+            actionFailed = self.allowChallenges(player, "assassinate", action, target.name)
+            if not actionFailed:
+                player.assassinate(target)
+                if target.influence < 1:
+                    self.remaining_players.pop(choiceInt)
         elif action == Actions.steal:
             target, choiceInt = self.chooseFromOtherPlayers(player, "steal from")
-            player.steal(target)
+            actionFailed = self.allowChallenges(player, "steal from", action, target.name)
+            if not actionFailed:
+                player.steal(target)
         elif action == Actions.exchange:
-            player.exchange(self.deck, self.remaining_players)
+            actionFailed = self.allowChallenges(player, "steal from", action)
+            if not actionFailed:
+                player.exchange(self.deck, self.remaining_players)
         elif action == Actions.income:
             player.income()
         elif action == Actions.foreign_aid:
@@ -50,7 +59,8 @@ class Game:
             choice = int(input("Yes(0), No(1)"))
             if choice == 0:
                 blocker, choiceInt = self.chooseFromOtherPlayers(player, "block")
-                if CounterActions.block_aid not in blocker.truthful_counter_actions:
+                actionFailed = self.allowChallenges(blocker, "block foreign aid from", action, player.name, True)
+                if actionFailed:
                     player.foreignAid()
             else:
                 player.foreignAid()
@@ -85,12 +95,17 @@ class Game:
 
     def chooseFromOtherPlayers(self, player, action):
         choiceInt = -1
-        if len(self.remaining_players) > 2:
+        i = 0
+        if len(self.remaining_players) > 2 or action == "challenge":
             if action == "block":
-                print("Which player would like to block?")
+                print("Which player would like to", action, "?")
+            elif action == "challenge":
+                print("Would any player like to challenge?")
             else:
                 print("Which player would you like to", action + "?")
-            i = 0
+
+            if action == "challenge":
+                print("No challenge(-1) ", end= "")
             for otherPlayer in self.remaining_players:
                 if otherPlayer is player:
                     i += 1
@@ -113,3 +128,32 @@ class Game:
                 choiceInt = i
                 break
         return target, choiceInt
+
+    def allowChallenges(self, player, action_verb, action, otherPlayerName = "", isCounterAction = False):
+        actionFailed = False
+        if isCounterAction:
+            counterAction = action
+            print(player.name, "is attempting to", action_verb, otherPlayerName, "with their", CounterActionsToCards(counterAction).name)
+        else:
+            print(player.name, "is attempting to", action_verb, otherPlayerName, "with their", ActionsToCards(action).name)
+
+        challenger, choiceInt = self.chooseFromOtherPlayers(player, "challenge")
+        if choiceInt == -1:
+            return actionFailed
+        if not isCounterAction:
+            if action not in player.truthful_actions:
+                print(player.name, "was caught lying!")
+                player.loseInfluence()
+                actionFailed = True
+            else:
+                print(player.name, "was not lying!")
+                challenger.loseInfluence()
+        else:
+            if counterAction not in player.truthful_counter_actions:
+                print(player.name, "was caught lying!")
+                player.loseInfluence()
+                actionFailed = True
+            else:
+                print(player.name, "was not lying!")
+                challenger.loseInfluence()
+        return actionFailed

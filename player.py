@@ -149,7 +149,6 @@ class Player:
         deck.shuffle()
 
     def assassinate(self, otherPlayer):
-        self.coins -= 3
         if CounterActions.block_assassination in otherPlayer.truthful_counter_actions:
             print(otherPlayer.name, "would you like to block the assassination with a contessa?")
             choice = int(input("Yes(0), No(1)"))

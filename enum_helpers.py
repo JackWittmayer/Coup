@@ -21,3 +21,14 @@ class CounterActions(enum.Enum):
     block_assassination = 8
     block_stealing = 9
 
+class ActionsToCards(enum.Enum):
+    duke = Actions.tax
+    ambassador = Actions.exchange
+    captain = Actions.steal
+    assassin = Actions.assassinate
+
+class CounterActionsToCards(enum.Enum):
+    duke = CounterActions.block_aid
+    ambassador = CounterActions.block_stealing
+    contessa = CounterActions.block_assassination
+
