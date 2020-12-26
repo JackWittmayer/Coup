@@ -94,13 +94,7 @@ class Player:
 
     def steal(self, otherPlayer):
         self.coins += 2
-        if CounterActions.block_stealing in otherPlayer.truthful_counter_actions:
-            print(otherPlayer.name, "would you like to block the stealing with a captain or ambassador?")
-            choice = int(input("Yes(0), No(1)"))
-            if choice == 1:
-                otherPlayer.getStolenFrom()
-        else:
-            otherPlayer.getStolenFrom()
+        otherPlayer.getStolenFrom()
 
     def getStolenFrom(self):
         if self.coins == 1:
@@ -149,13 +143,7 @@ class Player:
         deck.shuffle()
 
     def assassinate(self, otherPlayer):
-        if CounterActions.block_assassination in otherPlayer.truthful_counter_actions:
-            print(otherPlayer.name, "would you like to block the assassination with a contessa?")
-            choice = int(input("Yes(0), No(1)"))
-            if choice == 1:
-                otherPlayer.loseInfluence()
-        else:
-            otherPlayer.loseInfluence()
+        otherPlayer.loseInfluence()
 
     def showCards(self):
         print("Your cards: ", end= "")

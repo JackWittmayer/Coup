@@ -32,7 +32,7 @@ class Game:
         choice = int(input())
         action = Actions(choice)
         if action == Actions.tax:
-            actionFailed = self.allowChallenges(player, "tax", action)
+            actionFailed = self.allowChallenges(player, "tax", action, "Duke")
             if not actionFailed:
                 player.tax()
         elif action == Actions.assassinate:
@@ -40,16 +40,37 @@ class Game:
             player.coins -= 3
             actionFailed = self.allowChallenges(player, "assassinate", action, target.name)
             if not actionFailed:
-                player.assassinate(target)
+                print(target.name, "would you like to block the assassination with a contessa?")
+                target.showCards()
+                choice = int(input("Yes(0), No(1)"))
+                if choice == 0:
+                    actionFailed = self.allowChallenges(target, "block assassination",
+                                                        CounterActions.block_assassination, "Assassin", isCounterAction=True)
+                    if actionFailed:
+                        player.assassinate(target)
+                if choice == 1:
+                    player.assassinate(target)
                 if target.influence < 1:
                     self.remaining_players.pop(choiceInt)
         elif action == Actions.steal:
             target, choiceInt = self.chooseFromOtherPlayers(player, "steal from")
-            actionFailed = self.allowChallenges(player, "steal from", action, target.name)
+            actionFailed = self.allowChallenges(player, "steal from", action, "Captain", target.name)
             if not actionFailed:
-                player.steal(target)
+                print(target.name, "would you like to block the stealing with a captain or ambassador?")
+                target.showCards()
+                choice = int(input("Don't block stealing(0), Captain(1), Ambassador(2)"))
+                if choice == 1:
+                    cardName = "Captain"
+                elif choice == 2:
+                    cardName = "Ambassador"
+                if choice == 1 or choice == 2:
+                    actionFailed = self.allowChallenges(target, "block stealing", CounterActions.block_assassination, cardName, isCounterAction=True)
+                    if actionFailed:
+                        player.steal(target)
+                elif choice == 0:
+                    player.steal(target)
         elif action == Actions.exchange:
-            actionFailed = self.allowChallenges(player, "steal from", action)
+            actionFailed = self.allowChallenges(player, "exchange", action, "Ambassador")
             if not actionFailed:
                 player.exchange(self.deck, self.remaining_players)
         elif action == Actions.income:
@@ -59,7 +80,7 @@ class Game:
             choice = int(input("Yes(0), No(1)"))
             if choice == 0:
                 blocker, choiceInt = self.chooseFromOtherPlayers(player, "block")
-                actionFailed = self.allowChallenges(blocker, "block foreign aid from", action, player.name, True)
+                actionFailed = self.allowChallenges(blocker, "block foreign aid from", CounterActions.block_aid, "Duke", player.name, True)
                 if actionFailed:
                     player.foreignAid()
             else:
@@ -129,13 +150,13 @@ class Game:
                 break
         return target, choiceInt
 
-    def allowChallenges(self, player, action_verb, action, otherPlayerName = "", isCounterAction = False):
+    def allowChallenges(self, player, action_verb, action, cardName, otherPlayerName = "", isCounterAction = False):
         actionFailed = False
         if isCounterAction:
             counterAction = action
-            print(player.name, "is attempting to", action_verb, otherPlayerName, "with their", CounterActionsToCards(counterAction).name)
+            print(player.name, "is attempting to", action_verb, otherPlayerName, "with their", cardName)
         else:
-            print(player.name, "is attempting to", action_verb, otherPlayerName, "with their", ActionsToCards(action).name)
+            print(player.name, "is attempting to", action_verb, otherPlayerName, "with their", cardName)
 
         challenger, choiceInt = self.chooseFromOtherPlayers(player, "challenge")
         if choiceInt == -1:
