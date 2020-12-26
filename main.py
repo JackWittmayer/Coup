@@ -6,7 +6,7 @@
 from game import Game
 
 def start_game():
-    game = Game(2)
+    game = Game(3)
 
 
 # Press the green button in the gutter to run the script.
