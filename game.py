@@ -34,44 +34,12 @@ class Game:
         if action == Actions.tax:
             player.tax()
         elif action == Actions.assassinate:
-            if len(self.remaining_players) > 2:
-                print("Which player would you like to assassinate?")
-                i = 0
-                for otherPlayer in self.remaining_players:
-                    if otherPlayer is player:
-                        i += 1
-                        continue
-                    print(otherPlayer.name, end="(" + str(i) + ") ")
-                    i += 1
-                choiceInt = int(input())
-                target = self.remaining_players[choiceInt]
-            else:
-                choiceInt = 0
-                for otherPlayer in self.remaining_players:
-                    if otherPlayer is player:
-                        choiceInt += 1
-                        continue
-                    target = otherPlayer
-                    break
+            target, choiceInt = self.chooseFromOtherPlayers(player, "assassinate")
             player.assassinate(target)
             if target.influence < 1:
                 self.remaining_players.pop(choiceInt)
         elif action == Actions.steal:
-            if len(self.remaining_players) > 2:
-                print("Which player would you like to steal from?")
-                i = 0
-                for otherPlayer in self.remaining_players:
-                    if otherPlayer is player or otherPlayer.coins <= 0:
-                        i += 1
-                        continue
-                    print(otherPlayer.name, end="(" + str(i) + ") ")
-                    i += 1
-                target = self.remaining_players[int(input())]
-            else:
-                for otherPlayer in self.remaining_players:
-                    if otherPlayer is player:
-                        continue
-                    target = otherPlayer
+            target, choiceInt = self.chooseFromOtherPlayers(player, "steal from")
             player.steal(target)
         elif action == Actions.exchange:
             player.exchange(self.deck, self.remaining_players)
@@ -81,43 +49,13 @@ class Game:
             print("Would a player like to block foreign aid?")
             choice = int(input("Yes(0), No(1)"))
             if choice == 0:
-                if len(self.remaining_players) > 2:
-                    print("Which player is blocking?")
-                    i = 0
-                    for otherPlayer in self.remaining_players:
-                        if otherPlayer is player:
-                            i += 1
-                            continue
-                        print(otherPlayer.name, end="(" + str(i) + ") ")
-                        i += 1
-                    blocker = self.players[int(input())]
-                else:
-                    for otherPlayer in self.remaining_players:
-                        if otherPlayer is player:
-                            continue
-                        blocker = otherPlayer
+                blocker, choiceInt = self.chooseFromOtherPlayers(player, "block")
                 if CounterActions.block_aid not in blocker.truthful_counter_actions:
                     player.foreignAid()
             else:
                 player.foreignAid()
         elif action == Actions.coup:
-            if len(self.remaining_players) > 2:
-                print("Which player would you like to coup?")
-                i = 0
-                for otherPlayer in self.remaining_players:
-                    if otherPlayer is player:
-                        continue
-                    print(otherPlayer.name, end="(" + str(i) + ") ")
-                    i += 1
-                choiceInt = int(input())
-                target = self.remaining_players[choiceInt]
-            else:
-                choiceInt = 0
-                for otherPlayer in self.remaining_players:
-                    if otherPlayer is player:
-                        choiceInt += 1
-                        continue
-                    target = otherPlayer
+            target, choiceInt = self.chooseFromOtherPlayers(player, "coup")
             player.coup(target)
             if target.influence < 1:
                 self.remaining_players.pop(choiceInt)
@@ -144,3 +82,30 @@ class Game:
         self.players.append(player)
         self.remaining_players.append(player)
         player.findTruthfulActions(self.remaining_players)
+
+    def chooseFromOtherPlayers(self, player, action):
+        choiceInt = 0
+        if len(self.remaining_players) > 2:
+            if action == "block":
+                print("Which player would like to block?")
+            else:
+                print("Which player would you like to", action + "?")
+            i = 0
+            for otherPlayer in self.remaining_players:
+                if otherPlayer is player:
+                    i += 1
+                    continue
+                if action == "steal from" and otherPlayer.coins <= 0:
+                    i += 1
+                    continue
+                print(otherPlayer.name, end="(" + str(i) + ") ")
+                i += 1
+            choiceInt = int(input())
+            target = self.remaining_players[choiceInt]
+
+        else:
+            for otherPlayer in self.remaining_players:
+                if otherPlayer is player:
+                    continue
+                target = otherPlayer
+        return target, choiceInt
